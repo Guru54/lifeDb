@@ -1,6 +1,7 @@
 #include "engine/executor.h"
 #include "engine/row_codec.h"
 #include "engine/pager.h"
+#include "engine/btree.h"
 
 #include <iostream>
 #include <variant>
@@ -25,6 +26,32 @@ namespace minisql::engine
 
     string Executor::catalogPath() const { return data_dir_ + "/catalog.cat"; }
     string Executor::tablePath(const string &name) const { return data_dir_ + "/" + name + ".db"; }
+    string Executor::indexPath(const string &name) const { return data_dir_ + "/" + name + ".idx"; }
+
+    BTree *Executor::openIndex(const string &tname)
+    {
+        // Check if table has a primary key
+        TableMeta *meta = catalog.getTable(tname);
+        if (!meta)
+            return nullptr;
+        bool has_pk = false;
+        for (auto &c : meta->columns)
+            if (c.is_primary_key && c.type == DataType::Int)
+            {
+                has_pk = true;
+                break;
+            }
+        if (!has_pk)
+            return nullptr;
+        // Return cached or open new
+        auto it = indices_.find(tname);
+        if (it != indices_.end())
+            return it->second.get();
+        auto bt = make_unique<BTree>(indexPath(tname));
+        BTree *ptr = bt.get();
+        indices_[tname] = move(bt);
+        return ptr;
+    }
 
     // ── Dispatch ─────────────────────────────────────────────────────────────────
     void Executor::execute(const Stmt &stmt)
@@ -80,8 +107,11 @@ namespace minisql::engine
         catalog.createTable(meta);
         catalog.saveToDisk(catalogPath());
 
-        // Table ke liye blank .db file banao
+        // Blank .db file
         Pager pager(tablePath(s.table_name));
+
+        // Create .idx file if table has an INT primary key
+        openIndex(s.table_name);
 
         cout << "Table '" << s.table_name << "' created.\n";
     }
@@ -128,7 +158,21 @@ namespace minisql::engine
         auto encoded = encodeRow(*meta, ordered);
 
         Pager pager(tablePath(s.table_name));
-        pager.appendRow(encoded);
+        auto loc = pager.appendRow(encoded);
+
+        // Update B+Tree index on INT primary key column
+        BTree *idx = openIndex(s.table_name);
+        if (idx)
+        {
+            for (size_t i = 0; i < meta->columns.size(); i++)
+            {
+                if (meta->columns[i].is_primary_key && meta->columns[i].type == DataType::Int)
+                {
+                    idx->insert(get<int64_t>(ordered[i]), loc.page_id, loc.row_off);
+                    break;
+                }
+            }
+        }
 
         cout << "1 row inserted.\n";
     }
@@ -178,6 +222,44 @@ namespace minisql::engine
 
         int row_count = 0;
         Pager pager(tablePath(s.table_name));
+
+        // Index-assisted point lookup when WHERE is on INT primary key
+        BTree *idx = openIndex(s.table_name);
+        if (idx && s.where_eq.has_value())
+        {
+            const auto &eq = s.where_eq.value();
+            int pk_col = -1;
+            for (size_t i = 0; i < meta->columns.size(); i++)
+                if (meta->columns[i].name == eq.column && meta->columns[i].is_primary_key && meta->columns[i].type == DataType::Int)
+                {
+                    pk_col = (int)i;
+                    break;
+                }
+
+            if (pk_col >= 0 && holds_alternative<int64_t>(eq.value))
+            {
+                BTreeEntry entry;
+                if (idx->find(get<int64_t>(eq.value), entry))
+                {
+                    // Read the specific page + offset directly
+                    auto page = pager.readPage(entry.page_id);
+                    uint32_t row_len = 0;
+                    memcpy(&row_len, page.data() + 2 + entry.row_off + 1, 4);
+                    auto row = decodeRow(*meta, page.data() + 2 + entry.row_off + 5, row_len);
+                    for (size_t k = 0; k < col_idx.size(); k++)
+                    {
+                        if (k)
+                            cout << " | ";
+                        visit([](auto &v)
+                              { cout << v; }, row[col_idx[k]]);
+                    }
+                    cout << "\n";
+                    row_count = 1;
+                }
+                cout << "(" << row_count << (row_count == 1 ? " row)\n" : " rows)\n");
+                return;
+            }
+        }
 
         pager.scan([&](const uint8_t *data, uint32_t len)
                    {

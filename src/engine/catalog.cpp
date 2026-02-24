@@ -7,6 +7,7 @@ namespace minisql::engine
 {
 
     using namespace std;
+    using namespace minisql::sql;
 
     // ── helper: string binary mein likhna ────────────────────────────────────────
     static void write_string(ofstream &f, const string &s)

@@ -101,10 +101,11 @@ namespace minisql::engine
     }
 
     // ── Row Append ────────────────────────────────────────────────────────────────
-    void Pager::appendRow(const vector<uint8_t> &row_data)
+    // Row format: [flags:1][row_len:4][row_bytes...]  flags=0 alive, flags=1 deleted
+    Pager::RowLocation Pager::appendRow(const vector<uint8_t> &row_data)
     {
         uint32_t row_len = static_cast<uint32_t>(row_data.size());
-        uint32_t needed = 4 + row_len; // 4-byte length prefix + data
+        uint32_t needed = 1 + 4 + row_len; // tombstone + len + data
 
         // Nayi page chahiye?
         if (hdr_.write_page == 0 || hdr_.write_offset + needed > DATA_CAPACITY)
@@ -114,49 +115,75 @@ namespace minisql::engine
             hdr_.write_offset = 0;
         }
 
-        // Current write page read karo
         vector<uint8_t> page = readPage(hdr_.write_page);
 
-        // Row likhna: 2-byte used header ke baad
-        uint8_t *ptr = page.data() + 2 + hdr_.write_offset;
-        memcpy(ptr, &row_len, 4);
-        memcpy(ptr + 4, row_data.data(), row_len);
+        uint32_t row_off = hdr_.write_offset; // offset of the flags byte
+        uint8_t *ptr = page.data() + 2 + row_off;
+        ptr[0] = 0; // flags = alive
+        memcpy(ptr + 1, &row_len, 4);
+        memcpy(ptr + 5, row_data.data(), row_len);
 
         hdr_.write_offset += static_cast<uint16_t>(needed);
-
-        // Page ka used_bytes update karo
         memcpy(page.data(), &hdr_.write_offset, 2);
         writePage(hdr_.write_page, page);
 
-        // Header update karo
         hdr_.num_rows++;
         writeHeader();
+
+        return {hdr_.write_page, row_off};
     }
 
-    // ── Row Scan ─────────────────────────────────────────────────────────────────
+    // ── Row Scan (alive only) ─────────────────────────────────────────────────────
     void Pager::scan(function<void(const uint8_t *, uint32_t)> callback)
     {
         for (uint32_t pid = 1; pid < hdr_.num_pages; pid++)
         {
             vector<uint8_t> page = readPage(pid);
-
             uint16_t used = 0;
             memcpy(&used, page.data(), 2);
-
             uint32_t off = 0;
-            while (off + 4 <= static_cast<uint32_t>(used))
+            while (off + 5 <= static_cast<uint32_t>(used)) // 1+4 minimum
             {
+                uint8_t flags = page[2 + off];
                 uint32_t row_len = 0;
-                memcpy(&row_len, page.data() + 2 + off, 4);
-                off += 4;
-
-                if (off + row_len > static_cast<uint32_t>(used))
-                    break; // corruption guard
-
-                callback(page.data() + 2 + off, row_len);
-                off += row_len;
+                memcpy(&row_len, page.data() + 2 + off + 1, 4);
+                if (off + 5 + row_len > static_cast<uint32_t>(used))
+                    break;
+                if (!(flags & 0x01))
+                    callback(page.data() + 2 + off + 5, row_len);
+                off += 1 + 4 + row_len;
             }
         }
     }
 
+    // ── Extended scan (gives row location for DELETE/UPDATE) ──────────────────────
+    void Pager::scanEx(function<void(uint32_t, uint32_t, const uint8_t *, uint32_t)> callback)
+    {
+        for (uint32_t pid = 1; pid < hdr_.num_pages; pid++)
+        {
+            vector<uint8_t> page = readPage(pid);
+            uint16_t used = 0;
+            memcpy(&used, page.data(), 2);
+            uint32_t off = 0;
+            while (off + 5 <= static_cast<uint32_t>(used))
+            {
+                uint8_t flags = page[2 + off];
+                uint32_t row_len = 0;
+                memcpy(&row_len, page.data() + 2 + off + 1, 4);
+                if (off + 5 + row_len > static_cast<uint32_t>(used))
+                    break;
+                if (!(flags & 0x01))
+                    callback(pid, off, page.data() + 2 + off + 5, row_len);
+                off += 1 + 4 + row_len;
+            }
+        }
+    }
+
+    // ── Tombstone: mark row deleted ───────────────────────────────────────────────
+    void Pager::markDeleted(uint32_t page_id, uint32_t row_off)
+    {
+        vector<uint8_t> page = readPage(page_id);
+        page[2 + row_off] = 0x01;
+        writePage(page_id, page);
+    }
 } // namespace minisql::engine

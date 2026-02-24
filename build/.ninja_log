@@ -1,14 +1,21 @@
 # ninja log v7
 29	1033	7936135748734395	CMakeFiles/minisql.dir/src/sql/lexer.cpp.obj	1816af626cd52284
-54	1697	7936135749004403	CMakeFiles/minisql.dir/src/engine/pager.cpp.obj	e737789549de7b66
+76	6406	7936166116397042	CMakeFiles/minisql.dir/src/engine/pager.cpp.obj	e737789549de7b66
 42	1752	7936135748864407	CMakeFiles/minisql.dir/src/engine/catalog.cpp.obj	afdf402afe11a0b6
-24	1767	7936135748684518	CMakeFiles/minisql.dir/src/main.cpp.obj	8f4002aac3eb931b
-48	1778	7936135748924396	CMakeFiles/minisql.dir/src/engine/row_codec.cpp.obj	ac0e8c2c363d1db1
-35	2053	7936135748794742	CMakeFiles/minisql.dir/src/sql/parser.cpp.obj	6b39b28bdd5ba5a2
-24	250	7936136198579536	build.ninja	890efe488ca14855
-24	250	7936136198579536	C:/Users/Administrator/Desktop/Major Project/lifedb/build/cmake_install.cmake	890efe488ca14855
-43	1161	7936136199529398	CMakeFiles/minisql.dir/src/engine/pager.cpp.obj	e737789549de7b66
-37	1280	7936136199479590	CMakeFiles/minisql.dir/src/engine/row_codec.cpp.obj	ac0e8c2c363d1db1
 33	1345	7936136199439397	CMakeFiles/minisql.dir/src/main.cpp.obj	8f4002aac3eb931b
+37	1280	7936136199479590	CMakeFiles/minisql.dir/src/engine/row_codec.cpp.obj	ac0e8c2c363d1db1
+35	2053	7936135748794742	CMakeFiles/minisql.dir/src/sql/parser.cpp.obj	6b39b28bdd5ba5a2
+50	2229	7936171153750378	build.ninja	890efe488ca14855
+50	2229	7936171153546703	C:/Users/Administrator/Desktop/Major Project/lifedb/build/cmake_install.cmake	890efe488ca14855
 47	2142	7936136199579372	CMakeFiles/minisql.dir/src/engine/executor.cpp.obj	545910f404226913
 2143	2405	7936136220537750	minisql.exe	14347ba71505adf1
+86	6433	7936166116494114	CMakeFiles/minisql.dir/src/engine/btree.cpp.obj	506e2966b6daa1a0
+4	513	7936171153750378	build.ninja	890efe488ca14855
+4	513	7936171153750378	C:/Users/Administrator/Desktop/Major Project/lifedb/build/cmake_install.cmake	890efe488ca14855
+96	3106	7936171155943123	CMakeFiles/minisql.dir/src/engine/pager.cpp.obj	e737789549de7b66
+89	3216	7936172131180703	CMakeFiles/minisql.dir/src/engine/row_codec.cpp.obj	ac0e8c2c363d1db1
+99	3494	7936172131286228	CMakeFiles/minisql.dir/src/engine/btree.cpp.obj	506e2966b6daa1a0
+66	3877	7936172130952140	CMakeFiles/minisql.dir/src/main.cpp.obj	8f4002aac3eb931b
+112	7199	7936172131416162	CMakeFiles/minisql.dir/src/engine/executor.cpp.obj	545910f404226913
+75	2254	7936172502821638	CMakeFiles/minisql.dir/src/engine/catalog.cpp.obj	afdf402afe11a0b6
+2256	3967	7936172524629518	minisql.exe	7b1e5a861c8a4809

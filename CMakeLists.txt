@@ -11,6 +11,7 @@ add_executable(minisql
   src/engine/catalog.cpp
   src/engine/row_codec.cpp
   src/engine/pager.cpp
+  src/engine/btree.cpp
   src/engine/executor.cpp
 )
 

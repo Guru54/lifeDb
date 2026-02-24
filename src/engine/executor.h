@@ -1,35 +1,33 @@
-#pragma once
+﻿#pragma once
 #include <string>
-
+#include <map>
+#include <memory>
 #include "engine/catalog.h"
+#include "engine/btree.h"
 #include "sql/ast.h"
 
-namespace minisql::engine
-{
+namespace minisql::engine {
 
-    using namespace std;
-    using namespace minisql::sql;
+class Executor {
+public:
+    explicit Executor(const std::string& data_dir = ".");
+    void execute(const minisql::sql::Stmt& stmt);
 
-    class Executor
-    {
-    public:
-        // data_dir: jahan catalog.cat aur <table>.db files stored honge
-        explicit Executor(const string &data_dir = ".");
+    Catalog catalog;
 
-        // Koi bhi parsed statement execute karo
-        void execute(const Stmt &stmt);
+private:
+    std::string data_dir_;
 
-        Catalog catalog;
+    std::string catalogPath() const;
+    std::string tablePath(const std::string& name) const;
+    std::string indexPath(const std::string& name) const;
+    BTree* openIndex(const std::string& table_name);
 
-    private:
-        string data_dir_;
+    void execCreateTable(const minisql::sql::CreateTableStmt& s);
+    void execInsert    (const minisql::sql::InsertStmt& s);
+    void execSelect    (const minisql::sql::SelectStmt& s);
 
-        string catalogPath() const;
-        string tablePath(const string &name) const;
-
-        void execCreateTable(const CreateTableStmt &s);
-        void execInsert(const InsertStmt &s);
-        void execSelect(const SelectStmt &s);
-    };
+    std::map<std::string, std::unique_ptr<BTree>> indices_;
+};
 
 } // namespace minisql::engine
