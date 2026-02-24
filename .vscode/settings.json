@@ -1,0 +1,17 @@
+{
+    "C_Cpp.errorSquiggles": "enabled",
+    "C_Cpp.default.compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
+    "cmake.generator": "MinGW Makefiles",
+    "cmake.configureSettings": {
+        "CMAKE_C_COMPILER": "C:/msys64/ucrt64/bin/gcc.exe",
+        "CMAKE_CXX_COMPILER": "C:/msys64/ucrt64/bin/g++.exe",
+        "CMAKE_MAKE_PROGRAM": "C:/msys64/ucrt64/bin/ninja.exe"
+    },
+    "cmake.configureEnvironment": {
+        "PATH": "C:/msys64/ucrt64/bin;C:/msys64/usr/bin;${env:PATH}"
+    },
+    "cmake.buildEnvironment": {
+        "PATH": "C:/msys64/ucrt64/bin;C:/msys64/usr/bin;${env:PATH}"
+    },
+    "cmake.configureOnOpen": true
+}

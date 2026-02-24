@@ -1,0 +1,3 @@
+C:/Users/Administrator/Desktop/Major Project/lifedb/build/CMakeFiles/minisql.dir
+C:/Users/Administrator/Desktop/Major Project/lifedb/build/CMakeFiles/edit_cache.dir
+C:/Users/Administrator/Desktop/Major Project/lifedb/build/CMakeFiles/rebuild_cache.dir
