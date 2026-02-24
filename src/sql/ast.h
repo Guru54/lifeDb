@@ -16,7 +16,9 @@ namespace minisql::sql
         Begin,
         Commit,
         Rollback,
-        Explain
+        Explain,
+        Delete,
+        Update
     };
 
     inline const char *to_string(StmtKind k)
@@ -37,6 +39,10 @@ namespace minisql::sql
             return "Rollback";
         case StmtKind::Explain:
             return "Explain";
+        case StmtKind::Delete:
+            return "Delete";
+        case StmtKind::Update:
+            return "Update";
         }
         return "Unknown";
     }
@@ -87,10 +93,28 @@ namespace minisql::sql
         SelectStmt select; // only EXPLAIN SELECT ...
     };
 
+    // DELETE FROM table WHERE col = value
+    struct DeleteStmt
+    {
+        std::string table_name;
+        std::optional<ExprEq> where_eq;
+    };
+
+    // UPDATE table SET col = value WHERE col = value
+    struct UpdateStmt
+    {
+        std::string table_name;
+        std::string set_column;
+        Value set_value;
+        std::optional<ExprEq> where_eq;
+    };
+
     struct Stmt
     {
         StmtKind kind;
-        std::variant<CreateTableStmt, InsertStmt, SelectStmt, ExplainStmt, std::monostate> node;
+        std::variant<CreateTableStmt, InsertStmt, SelectStmt, ExplainStmt,
+                     DeleteStmt, UpdateStmt, std::monostate>
+            node;
     };
 
 } // namespace minisql::sql

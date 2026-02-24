@@ -92,6 +92,12 @@ namespace minisql::sql
       return {TokenKind::KW_ROLLBACK, s};
     if (ieq(s, "EXPLAIN"))
       return {TokenKind::KW_EXPLAIN, s};
+    if (ieq(s, "DELETE"))
+      return {TokenKind::KW_DELETE, s};
+    if (ieq(s, "UPDATE"))
+      return {TokenKind::KW_UPDATE, s};
+    if (ieq(s, "SET"))
+      return {TokenKind::KW_SET, s};
 
     return Token{TokenKind::Identifier, s};
   }

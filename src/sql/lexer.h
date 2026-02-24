@@ -39,7 +39,10 @@ namespace minisql::sql
     KW_BEGIN,
     KW_COMMIT,
     KW_ROLLBACK,
-    KW_EXPLAIN
+    KW_EXPLAIN,
+    KW_DELETE,
+    KW_UPDATE,
+    KW_SET
   };
 
   struct Token
