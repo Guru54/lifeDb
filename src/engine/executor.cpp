@@ -15,18 +15,21 @@ namespace minisql::engine
     using namespace minisql::sql;
     namespace fs = filesystem;
 
-    // ── Constructor: catalog load karo ───────────────────────────────────────────
+    // ── Constructor: catalog load + WAL recovery ──────────────────────────────
     Executor::Executor(const string &data_dir) : data_dir_(data_dir)
     {
         fs::create_directories(data_dir_);
         string cp = catalogPath();
         if (fs::exists(cp))
             catalog.loadFromDisk(cp);
+        wal_ = make_unique<Wal>(walPath());
+        recoverFromWal();
     }
 
     string Executor::catalogPath() const { return data_dir_ + "/catalog.cat"; }
     string Executor::tablePath(const string &name) const { return data_dir_ + "/" + name + ".db"; }
     string Executor::indexPath(const string &name) const { return data_dir_ + "/" + name + ".idx"; }
+    string Executor::walPath()   const { return data_dir_ + "/wal.log"; }
 
     BTree *Executor::openIndex(const string &tname)
     {
@@ -68,13 +71,13 @@ namespace minisql::engine
             execSelect(get<SelectStmt>(stmt.node));
             break;
         case StmtKind::Begin:
-            cout << "BEGIN  (transactions coming soon)\n";
+            execBegin();
             break;
         case StmtKind::Commit:
-            cout << "COMMIT (transactions coming soon)\n";
+            execCommit();
             break;
         case StmtKind::Rollback:
-            cout << "ROLLBACK (transactions coming soon)\n";
+            execRollback();
             break;
         case StmtKind::Explain:
         {
@@ -156,6 +159,14 @@ namespace minisql::engine
         }
 
         auto encoded = encodeRow(*meta, ordered);
+
+        // If a transaction is active, buffer the insert and log to WAL
+        if (txn_active_) {
+            wal_->logInsert(txn_id_, s.table_name, encoded);
+            pending_.push_back({s.table_name, encoded});
+            cout << "1 row buffered (pending COMMIT).\n";
+            return;
+        }
 
         Pager pager(tablePath(s.table_name));
         auto loc = pager.appendRow(encoded);
@@ -285,6 +296,117 @@ namespace minisql::engine
         row_count++; });
 
         cout << "(" << row_count << (row_count == 1 ? " row)\n" : " rows)\n");
+    }
+
+    // ── BEGIN ─────────────────────────────────────────────────────────────────
+    void Executor::execBegin() {
+        if (txn_active_) { cout << "ERROR: already in a transaction.\n"; return; }
+        txn_active_ = true;
+        txn_id_++;
+        pending_.clear();
+        wal_->logBegin(txn_id_);
+        cout << "BEGIN\n";
+    }
+
+    // ── COMMIT ────────────────────────────────────────────────────────────────
+    void Executor::execCommit() {
+        if (!txn_active_) { cout << "ERROR: no active transaction.\n"; return; }
+        // Apply all pending inserts to pager + index
+        for (auto& [tname, encoded] : pending_) {
+            TableMeta* meta = catalog.getTable(tname);
+            if (!meta) continue;
+            Pager pager(tablePath(tname));
+            auto loc = pager.appendRow(encoded);
+            BTree* idx = openIndex(tname);
+            if (idx) {
+                auto row_vals = decodeRow(*meta, encoded.data(), encoded.size());
+                for (size_t i = 0; i < meta->columns.size(); i++) {
+                    if (meta->columns[i].is_primary_key &&
+                        meta->columns[i].type == DataType::Int) {
+                        idx->insert(get<int64_t>(row_vals[i]), loc.page_id, loc.row_off);
+                        break;
+                    }
+                }
+            }
+        }
+        wal_->logCommit(txn_id_);
+        pending_.clear();
+        txn_active_ = false;
+        cout << "COMMIT\n";
+    }
+
+    // ── ROLLBACK ──────────────────────────────────────────────────────────────
+    void Executor::execRollback() {
+        if (!txn_active_) { cout << "ERROR: no active transaction.\n"; return; }
+        wal_->logRollback(txn_id_);
+        pending_.clear();
+        txn_active_ = false;
+        cout << "ROLLBACK\n";
+    }
+
+    // ── WAL crash recovery ────────────────────────────────────────────────────
+    // Replay any committed transactions whose inserts weren't yet applied.
+    // Strategy: collect inserts per txn_id; apply those with a Commit record
+    // that have no matching data already (idempotent: best-effort, skips
+    // re-apply since pager rows are not deduplicated here; for a school
+    // project we just skip replaying WAL if index says key already exists).
+    void Executor::recoverFromWal() {
+        auto entries = wal_->readAll();
+        if (entries.empty()) return;
+
+        // Group inserts by txn_id, track which txns committed/rolled-back
+        map<uint64_t, vector<pair<string, vector<uint8_t>>>> txn_inserts;
+        map<uint64_t, bool> committed;
+
+        for (auto& e : entries) {
+            if (e.op == Wal::Op::Insert) {
+                txn_inserts[e.txn_id].push_back({e.table, e.row_data});
+            } else if (e.op == Wal::Op::Commit) {
+                committed[e.txn_id] = true;
+            } else if (e.op == Wal::Op::Rollback) {
+                committed[e.txn_id] = false;
+            }
+        }
+
+        // Update next txn_id_ so we don't reuse old ids
+        for (auto& [id, _] : committed) if (id >= txn_id_) txn_id_ = id;
+
+        // For each committed txn_id, try to replay inserts
+        for (auto& [tid, rows] : txn_inserts) {
+            if (!committed.count(tid) || !committed[tid]) continue;
+            for (auto& [tname, encoded] : rows) {
+                TableMeta* meta = catalog.getTable(tname);
+                if (!meta) continue;
+                // Check if this row is already present via index key lookup
+                auto row_vals = decodeRow(*meta, encoded.data(), encoded.size());
+                BTree* idx = openIndex(tname);
+                if (idx) {
+                    for (size_t i = 0; i < meta->columns.size(); i++) {
+                        if (meta->columns[i].is_primary_key &&
+                            meta->columns[i].type == DataType::Int) {
+                            BTreeEntry dummy;
+                            int64_t pk = get<int64_t>(row_vals[i]);
+                            if (idx->find(pk, dummy)) goto next_row; // already applied
+                            break;
+                        }
+                    }
+                }
+                {
+                    Pager pager(tablePath(tname));
+                    auto loc = pager.appendRow(encoded);
+                    if (idx) {
+                        for (size_t i = 0; i < meta->columns.size(); i++) {
+                            if (meta->columns[i].is_primary_key &&
+                                meta->columns[i].type == DataType::Int) {
+                                idx->insert(get<int64_t>(row_vals[i]), loc.page_id, loc.row_off);
+                                break;
+                            }
+                        }
+                    }
+                }
+                next_row:;
+            }
+        }
     }
 
 } // namespace minisql::engine

@@ -100,6 +100,14 @@ build CMakeFiles/minisql.dir/src/engine/btree.cpp.obj: CXX_COMPILER__minisql_uns
   OBJECT_FILE_DIR = CMakeFiles\minisql.dir\src\engine
   TARGET_SUPPORT_DIR = CMakeFiles\minisql.dir
 
+build CMakeFiles/minisql.dir/src/engine/wal.cpp.obj: CXX_COMPILER__minisql_unscanned_ C$:/Users/Administrator/Desktop/Major$ Project/lifedb/src/engine/wal.cpp || cmake_object_order_depends_target_minisql
+  DEP_FILE = CMakeFiles\minisql.dir\src\engine\wal.cpp.obj.d
+  FLAGS = -std=gnu++17
+  INCLUDES = -I"C:/Users/Administrator/Desktop/Major Project/lifedb/src"
+  OBJECT_DIR = CMakeFiles\minisql.dir
+  OBJECT_FILE_DIR = CMakeFiles\minisql.dir\src\engine
+  TARGET_SUPPORT_DIR = CMakeFiles\minisql.dir
+
 build CMakeFiles/minisql.dir/src/engine/executor.cpp.obj: CXX_COMPILER__minisql_unscanned_ C$:/Users/Administrator/Desktop/Major$ Project/lifedb/src/engine/executor.cpp || cmake_object_order_depends_target_minisql
   DEP_FILE = CMakeFiles\minisql.dir\src\engine\executor.cpp.obj.d
   FLAGS = -std=gnu++17
@@ -116,7 +124,7 @@ build CMakeFiles/minisql.dir/src/engine/executor.cpp.obj: CXX_COMPILER__minisql_
 #############################################
 # Link the executable minisql.exe
 
-build minisql.exe: CXX_EXECUTABLE_LINKER__minisql_ CMakeFiles/minisql.dir/src/main.cpp.obj CMakeFiles/minisql.dir/src/sql/lexer.cpp.obj CMakeFiles/minisql.dir/src/sql/parser.cpp.obj CMakeFiles/minisql.dir/src/engine/catalog.cpp.obj CMakeFiles/minisql.dir/src/engine/row_codec.cpp.obj CMakeFiles/minisql.dir/src/engine/pager.cpp.obj CMakeFiles/minisql.dir/src/engine/btree.cpp.obj CMakeFiles/minisql.dir/src/engine/executor.cpp.obj
+build minisql.exe: CXX_EXECUTABLE_LINKER__minisql_ CMakeFiles/minisql.dir/src/main.cpp.obj CMakeFiles/minisql.dir/src/sql/lexer.cpp.obj CMakeFiles/minisql.dir/src/sql/parser.cpp.obj CMakeFiles/minisql.dir/src/engine/catalog.cpp.obj CMakeFiles/minisql.dir/src/engine/row_codec.cpp.obj CMakeFiles/minisql.dir/src/engine/pager.cpp.obj CMakeFiles/minisql.dir/src/engine/btree.cpp.obj CMakeFiles/minisql.dir/src/engine/wal.cpp.obj CMakeFiles/minisql.dir/src/engine/executor.cpp.obj
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\minisql.dir
   POST_BUILD = cd .
