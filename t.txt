@@ -1,0 +1,3 @@
+$env:PATH = "C:\msys64\ucrt64\bin;" + $env:PATH
+cd "C:\Users\Administrator\Desktop\Major Project\lifedb"
+.\build\minisql.exe

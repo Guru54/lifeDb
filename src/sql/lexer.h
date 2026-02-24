@@ -42,7 +42,9 @@ namespace minisql::sql
     KW_EXPLAIN,
     KW_DELETE,
     KW_UPDATE,
-    KW_SET
+    KW_SET,
+    KW_SHOW,
+    KW_TABLES
   };
 
   struct Token

@@ -205,6 +205,15 @@ namespace minisql::sql
     return stmt;
   }
 
+  // SHOW TABLES;
+  ShowTablesStmt Parser::parseShowTables()
+  {
+    expect(TokenKind::KW_SHOW, "expected SHOW");
+    expect(TokenKind::KW_TABLES, "expected TABLES after SHOW");
+    match(TokenKind::Semicolon);
+    return {};
+  }
+
   Stmt Parser::parseStatement()
   {
     if (match(TokenKind::KW_BEGIN))
@@ -252,6 +261,11 @@ namespace minisql::sql
     {
       auto node = parseUpdate();
       return {StmtKind::Update, node};
+    }
+    if (cur_.kind == TokenKind::KW_SHOW)
+    {
+      auto node = parseShowTables();
+      return {StmtKind::ShowTables, node};
     }
 
     throw std::runtime_error("unknown/unsupported statement");

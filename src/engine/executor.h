@@ -37,6 +37,7 @@ namespace minisql::engine
         void execBegin();
         void execCommit();
         void execRollback();
+        void execShowTables();
 
         // WAL crash recovery: replay committed txns on startup
         void recoverFromWal();

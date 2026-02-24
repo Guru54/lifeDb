@@ -98,6 +98,10 @@ namespace minisql::sql
       return {TokenKind::KW_UPDATE, s};
     if (ieq(s, "SET"))
       return {TokenKind::KW_SET, s};
+    if (ieq(s, "SHOW"))
+      return {TokenKind::KW_SHOW, s};
+    if (ieq(s, "TABLES"))
+      return {TokenKind::KW_TABLES, s};
 
     return Token{TokenKind::Identifier, s};
   }

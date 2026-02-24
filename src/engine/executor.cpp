@@ -91,6 +91,9 @@ namespace minisql::engine
             cout << "EXPLAIN: SeqScan on table '" << ex.select.table_name << "'\n";
             break;
         }
+        case StmtKind::ShowTables:
+            execShowTables();
+            break;
         default:
             throw runtime_error("executor: unsupported statement");
         }
@@ -526,6 +529,19 @@ namespace minisql::engine
         pending_.clear();
         txn_active_ = false;
         cout << "ROLLBACK\n";
+    }
+
+    // ── SHOW TABLES ───────────────────────────────────────────────────────────
+    void Executor::execShowTables()
+    {
+        if (catalog.tables.empty())
+        {
+            cout << "(no tables)\n";
+            return;
+        }
+        cout << "Tables:\n";
+        for (auto &[name, _] : catalog.tables)
+            cout << "  " << name << "\n";
     }
 
     // ── WAL crash recovery ────────────────────────────────────────────────────

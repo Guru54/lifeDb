@@ -1,23 +1,13 @@
 # ninja log v7
-94	1987	7936182257087295	CMakeFiles/minisql.dir/src/sql/lexer.cpp.obj	1816af626cd52284
-96	3106	7936171155943123	CMakeFiles/minisql.dir/src/engine/pager.cpp.obj	e737789549de7b66
-116	3164	7936182257297022	CMakeFiles/minisql.dir/src/engine/catalog.cpp.obj	afdf402afe11a0b6
-92	4404	7936184886577730	CMakeFiles/minisql.dir/src/main.cpp.obj	8f4002aac3eb931b
-127	3044	7936182257412414	CMakeFiles/minisql.dir/src/engine/row_codec.cpp.obj	ac0e8c2c363d1db1
-105	3795	7936182257200356	CMakeFiles/minisql.dir/src/sql/parser.cpp.obj	6b39b28bdd5ba5a2
-52	556	7936188673717451	build.ninja	890efe488ca14855
-52	556	7936188673501952	C:/Users/Administrator/Desktop/Major Project/lifedb/build/cmake_install.cmake	890efe488ca14855
-115	9713	7936184886812544	CMakeFiles/minisql.dir/src/engine/executor.cpp.obj	545910f404226913
-9713	10928	7936184982798422	minisql.exe	beadb1aea48b937
-99	3494	7936172131286228	CMakeFiles/minisql.dir/src/engine/btree.cpp.obj	506e2966b6daa1a0
-105	2980	7936184886700089	CMakeFiles/minisql.dir/src/engine/wal.cpp.obj	efd16fa73d38c0ad
-120	1135	7936188673717451	build.ninja	890efe488ca14855
-120	1135	7936188673717451	C:/Users/Administrator/Desktop/Major Project/lifedb/build/cmake_install.cmake	890efe488ca14855
 140	4248	7936188676868990	CMakeFiles/minisql.dir/src/sql/lexer.cpp.obj	1816af626cd52284
+96	3106	7936171155943123	CMakeFiles/minisql.dir/src/engine/pager.cpp.obj	e737789549de7b66
 192	5508	7936188677388752	CMakeFiles/minisql.dir/src/engine/catalog.cpp.obj	afdf402afe11a0b6
-214	5702	7936188677611707	CMakeFiles/minisql.dir/src/engine/row_codec.cpp.obj	ac0e8c2c363d1db1
-319	6054	7936188678670292	CMakeFiles/minisql.dir/src/engine/wal.cpp.obj	efd16fa73d38c0ad
 128	8059	7936188676753414	CMakeFiles/minisql.dir/src/main.cpp.obj	8f4002aac3eb931b
+214	5702	7936188677611707	CMakeFiles/minisql.dir/src/engine/row_codec.cpp.obj	ac0e8c2c363d1db1
 153	8152	7936188677004589	CMakeFiles/minisql.dir/src/sql/parser.cpp.obj	6b39b28bdd5ba5a2
+120	1135	7936204941403701	build.ninja	890efe488ca14855
+120	1135	7936204941217366	C:/Users/Administrator/Desktop/Major Project/lifedb/build/cmake_install.cmake	890efe488ca14855
 370	11894	7936188679167648	CMakeFiles/minisql.dir/src/engine/executor.cpp.obj	545910f404226913
 11894	12784	7936188794407195	minisql.exe	beadb1aea48b937
+99	3494	7936172131286228	CMakeFiles/minisql.dir/src/engine/btree.cpp.obj	506e2966b6daa1a0
+319	6054	7936188678670292	CMakeFiles/minisql.dir/src/engine/wal.cpp.obj	efd16fa73d38c0ad

@@ -18,7 +18,8 @@ namespace minisql::sql
         Rollback,
         Explain,
         Delete,
-        Update
+        Update,
+        ShowTables
     };
 
     inline const char *to_string(StmtKind k)
@@ -43,6 +44,8 @@ namespace minisql::sql
             return "Delete";
         case StmtKind::Update:
             return "Update";
+        case StmtKind::ShowTables:
+            return "ShowTables";
         }
         return "Unknown";
     }
@@ -109,11 +112,16 @@ namespace minisql::sql
         std::optional<ExprEq> where_eq;
     };
 
+    // SHOW TABLES
+    struct ShowTablesStmt
+    {
+    };
+
     struct Stmt
     {
         StmtKind kind;
         std::variant<CreateTableStmt, InsertStmt, SelectStmt, ExplainStmt,
-                     DeleteStmt, UpdateStmt, std::monostate>
+                     DeleteStmt, UpdateStmt, ShowTablesStmt, std::monostate>
             node;
     };
 

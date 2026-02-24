@@ -29,6 +29,7 @@ namespace minisql::sql
     ExplainStmt parseExplain();
     DeleteStmt parseDelete();
     UpdateStmt parseUpdate();
+    ShowTablesStmt parseShowTables();
 
   private:
     Lexer lex_;
