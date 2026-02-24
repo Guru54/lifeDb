@@ -1,2 +1,0 @@
-g++.exe: fatal error: input file 'C:/Users/Administrator/Desktop/Major' is the same as output file
-compilation terminated.

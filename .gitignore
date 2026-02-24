@@ -1,0 +1,17 @@
+# Build output
+build/
+
+# Compiled binaries
+*.exe
+*.out
+*.o
+
+# Runtime data files
+*.cat
+data/
+
+# Debug/log files
+*.txt
+
+# VS Code settings
+.vscode/
